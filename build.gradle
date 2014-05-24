@@ -1,0 +1,67 @@
+apply plugin: 'groovy'
+apply plugin: 'maven'
+
+version = 1.2
+group = 'com.github.leoluz'
+description = 'LeoLuz gradle experiments'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+
+    compile 'org.codehaus.groovy:groovy-all:2.3.0'
+    compile 'org.slf4j:slf4j-api:1.7.5'
+    testCompile "junit:junit:4.11"
+}
+
+task sourcesJar(type: Jar) {
+    classifier 'sources'
+    from sourceSets.main.allSource
+}
+
+task groovydocJar(type: Jar, dependsOn: groovydoc) {
+    classifier 'groovydoc'
+    from groovydoc.destinationDir
+}
+
+artifacts {
+    archives sourcesJar
+    archives groovydocJar
+}
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            repository(url: "http://localhost:8081/artifactory/leoluz-releases") {
+                authentication(userName: "admin", password: "password")
+            }
+        }
+    }
+}
+
+def taskGroup = "helloWorld"
+
+def helloWorld = { task ->
+    println "Hello world from ${task.name}"
+}
+
+task print(description: "A really dummy hello world!", group: taskGroup) << helloWorld
+
+task dependenteUm(dependsOn: print, group: taskGroup) << helloWorld
+
+task dependenteDois(dependsOn: dependenteUm, group: taskGroup) << helloWorld
+
+task defaultProperties(group: taskGroup) << {
+    println "Project: $project"
+    println "Name: $name"
+    println "Path: $path"
+    println "Project directory: $projectDir"
+    println "Build directory: $buildDir"
+    println "Version: $version"
+    println "Group: $project.group"
+    println "Description: $project.description"
+    println "AntBuilder: $ant"
+}
+
